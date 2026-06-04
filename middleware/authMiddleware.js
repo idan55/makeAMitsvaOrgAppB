@@ -39,6 +39,16 @@ export const authenticateToken = async (req, res, next) => {
   }
 };
 
+export const requireVerifiedIdentity = (req, res, next) => {
+  if (req.user?.identityStatus !== "verified") {
+    return res.status(403).json({
+      error: "Identity verification required",
+      identityStatus: req.user?.identityStatus || "not_started",
+    });
+  }
+  next();
+};
+
 export const isAdmin = (req, res, next) => {
   if (!req.user || req.user.role !== "admin") {
     return res.status(403).json({ error: "Admin access only" });

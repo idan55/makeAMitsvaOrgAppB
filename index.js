@@ -42,6 +42,7 @@ import chatRouter from "./routers/chatRouter.js";
 initSocketServer(server, allowedOrigins);
 app.use("/api/upload", uploadRouter);
 app.use("/api/users", userRouter);
+app.use("/api/identity", identityRouter);
 app.use("/api/requests", requestRouter);
 app.use("/api/chats", chatRouter);
 app.use("/api/admin", adminRouter);
