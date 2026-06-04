@@ -54,7 +54,7 @@ CLIENT_ORIGINS=http://localhost:5173,https://your-domain.com
 ```
 
 Notes:
-- `CLIENT_ORIGINS` is a comma-separated allow-list for CORS. If not set, it defaults to `https://makeamitsva-orgf.onrender.com,http://localhost:5173`.
+- `CLIENT_ORIGINS` is a comma-separated allow-list for CORS. In local development, `http://localhost:5173` is enough. If not set, it defaults to `http://localhost:5173`.
 - `JWT_SECRET` is required for creating tokens; the auth middleware also falls back to a static string if it is missing. For production, always set a strong `JWT_SECRET`.
 
 ## Dependencies and what they do

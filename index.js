@@ -16,7 +16,7 @@ app.use(helmet());
 
 const allowedOrigins = (
   process.env.CLIENT_ORIGINS ||
-  "https://makeamitsva-orgf.onrender.com,http://localhost:5173"
+  "http://localhost:5173"
 )
   .split(",")
   .map((o) => o.trim())
