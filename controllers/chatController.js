@@ -4,6 +4,12 @@ import { Request } from "../models/requestModel.js";
 import { v2 as cloudinaryV2 } from "cloudinary";
 import multer from "multer";
 import sharp from "sharp";
+import {
+  createChatMessage,
+  getChatForParticipant,
+  sanitizeChatMessages,
+} from "../services/chatService.js";
+import { emitChatClosed, emitChatMessage } from "../socket.js";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -13,18 +19,8 @@ export const chatUploadMiddleware = upload.single("file");
 
 export const getMessagesByChatId = async (req, res) => {
   try {
-    const chat = await Chat.findById(req.params.chatId).populate(
-      "messages.sender"
-    );
-    if (!chat) return res.status(404).json({ error: "Chat not found" });
-
-    const sanitizedMessages = chat.messages.map((m) => {
-      if (m.sender) return m;
-      return {
-        ...m.toObject(),
-        sender: { _id: "deleted", name: "Deleted user" },
-      };
-    });
+    const chat = await getChatForParticipant(req.params.chatId, req.user.id);
+    const sanitizedMessages = sanitizeChatMessages(chat);
 
     const currentUserId = String(req.user.id);
     const hasFlagged = (chat.flags || []).some(
@@ -39,49 +35,21 @@ export const getMessagesByChatId = async (req, res) => {
 
 export const postMessageToChat = async (req, res) => {
   try {
-    const { text = "", attachments = [] } = req.body;
-    const trimmed = text.trim();
-    const parsedAttachments = Array.isArray(attachments)
-      ? attachments
-          .map((a) => ({
-            url: a.url,
-            type: a.type || "file",
-            publicId: a.publicId,
-            originalName: a.originalName,
-          }))
-          .filter((a) => a.url)
-      : [];
-
-    if (!trimmed && parsedAttachments.length === 0) {
-      return res
-        .status(400)
-        .json({ error: "Message must have text or attachment" });
-    }
-
-    const chat = await Chat.findById(req.params.chatId);
-    if (!chat) return res.status(404).json({ error: "Chat not found" });
-    if (chat.isClosed) {
-      return res.status(403).json({ error: "Chat is closed" });
-    }
-
-    const message = {
-      sender: req.user.id,
-      text: trimmed,
-      attachments: parsedAttachments,
-      createdAt: new Date(),
-    };
-
-    chat.messages.push(message);
-    await chat.save();
-
-    await chat.populate("messages.sender");
-    const lastMessage = chat.messages[chat.messages.length - 1];
+    const result = await createChatMessage({
+      chatId: req.params.chatId,
+      userId: req.user.id,
+      text: req.body?.text,
+      attachments: req.body?.attachments,
+    });
+    emitChatMessage(result.chat, result.event);
 
     return res.status(201).json({
-      message: lastMessage
+      message: result.message,
     });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    return res
+      .status(err.statusCode || 500)
+      .json({ error: err.message || "Failed to send message" });
   }
 };
 
@@ -263,6 +231,7 @@ export const flagUserInChat = async (req, res) => {
     });
     chat.isClosed = true;
     await chat.save();
+    emitChatClosed(chat);
 
     const updated = await User.findByIdAndUpdate(
       targetUserId,

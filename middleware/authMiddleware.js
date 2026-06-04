@@ -4,6 +4,24 @@ import User from "../models/userModel.js";
 
 const verifyAsync = promisify(jwt.verify);
 
+export const authenticateSocketToken = async (token) => {
+  const decoded = await verifyAsync(
+    token,
+    process.env.JWT_SECRET || "Idan_HaTotach"
+  );
+  const user = await User.findById(decoded.id).select("-password");
+  if (!user) {
+    const error = new Error("Invalid token, user not found");
+    error.statusCode = 401;
+    throw error;
+  }
+
+  return {
+    id: user._id.toString(),
+    role: user.role,
+  };
+};
+
 export const authenticateToken = async (req, res, next) => {
   try {
     const authHeader = req.headers["authorization"];
@@ -13,17 +31,7 @@ export const authenticateToken = async (req, res, next) => {
       return res.status(401).json({ error: "Access denied, token missing" });
     }
 
-    const decoded = await verifyAsync(token, process.env.JWT_SECRET || "Idan_HaTotach");
-    const user = await User.findById(decoded.id).select("-password");
-    if (!user) {
-      return res.status(401).json({ error: "Invalid token, user not found" });
-    }
-
-    req.user = {
-      id: user._id.toString(),
-      role: user.role,
-      identityStatus: user.identityStatus || "not_started",
-    };
+    req.user = await authenticateSocketToken(token);
 
     next();
   } catch (err) {

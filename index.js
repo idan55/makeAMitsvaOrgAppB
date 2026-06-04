@@ -1,9 +1,11 @@
 import { configDotenv } from "dotenv";
+import http from "http";
 configDotenv();
 const PORT = process.env.PORT || 4000;
 const uri = process.env.MONGODB_URI;
 import express, { json } from "express";
 const app = express();
+const server = http.createServer(app);
 import "dotenv/config";
 
 import mongoose from "mongoose";
@@ -11,8 +13,7 @@ import cors from "cors";
 import helmet from "helmet";
 import uploadRouter from "./routers/uploadRouter.js";
 import adminRouter from "./routers/adminRouter.js";
-import identityRouter from "./routers/identityRouter.js";
-
+import { initSocketServer } from "./socket.js";
 app.use(json());
 app.use(helmet());
 
@@ -38,6 +39,7 @@ app.use(
 import userRouter from "./routers/userRouter.js";
 import requestRouter from "./routers/requestRouter.js";
 import chatRouter from "./routers/chatRouter.js";
+initSocketServer(server, allowedOrigins);
 app.use("/api/upload", uploadRouter);
 app.use("/api/users", userRouter);
 app.use("/api/identity", identityRouter);
@@ -74,12 +76,16 @@ if (!uri) {
 }
 mongoose
   .connect(uri)
-  .then(() => console.log("✅ Database connected"))
+  .then(() => {
+    console.log("✅ Database connected");
+    console.log("Mongo host:", mongoose.connection.host || "N/A");
+    console.log("Mongo database:", mongoose.connection.name || "N/A");
+  })
   .catch((err) => {
     console.error("❌ Database connection failed:", err);
     process.exit(1);
   });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log("Server is running on port: ", PORT);
 });
