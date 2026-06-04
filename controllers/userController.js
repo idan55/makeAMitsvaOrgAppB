@@ -21,6 +21,10 @@ function sanitizeUser(user) {
     stars: user.stars ?? 0,
     couponEarned: user.couponEarned ?? false,
     profileImage: user.profileImage || "",
+    identityStatus: user.identityStatus || "not_started",
+    identityProvider: user.identityProvider || null,
+    identitySubmittedAt: user.identitySubmittedAt || null,
+    identityVerifiedAt: user.identityVerifiedAt || null,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };

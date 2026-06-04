@@ -45,6 +45,24 @@ const userSchema = new mongoose.Schema(
     flagsCount: { type: Number, default: 0 },
     lastFlaggedAt: { type: Date, default: null },
     profileImage: { type: String, default: "" },
+    identityStatus: {
+      type: String,
+      enum: ["not_started", "pending", "verified", "failed"],
+      default: "not_started",
+    },
+    identityProvider: {
+      type: String,
+      enum: ["manual", null],
+      default: null,
+    },
+    identityVerificationId: { type: String, default: null },
+    identityDocumentUrl: { type: String, default: "" },
+    identitySelfieUrl: { type: String, default: "" },
+    identityVideoUrl: { type: String, default: "" },
+    identityLastError: { type: String, default: "" },
+    identitySubmittedAt: { type: Date, default: null },
+    identityReviewedAt: { type: Date, default: null },
+    identityVerifiedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );

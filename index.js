@@ -11,6 +11,8 @@ import cors from "cors";
 import helmet from "helmet";
 import uploadRouter from "./routers/uploadRouter.js";
 import adminRouter from "./routers/adminRouter.js";
+import identityRouter from "./routers/identityRouter.js";
+
 app.use(json());
 app.use(helmet());
 
@@ -38,6 +40,7 @@ import requestRouter from "./routers/requestRouter.js";
 import chatRouter from "./routers/chatRouter.js";
 app.use("/api/upload", uploadRouter);
 app.use("/api/users", userRouter);
+app.use("/api/identity", identityRouter);
 app.use("/api/requests", requestRouter);
 app.use("/api/chats", chatRouter);
 app.use("/api/admin", adminRouter);

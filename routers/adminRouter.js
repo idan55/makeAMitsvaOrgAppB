@@ -4,6 +4,9 @@ import {
   listUsers,
   banUser,
   unbanUser,
+  listPendingIdentityReviews,
+  approveIdentity,
+  rejectIdentity,
   deleteUserAdmin,
   listRequests,
   deleteRequestAdmin,
@@ -14,8 +17,11 @@ const router = Router();
 router.use(authenticateToken, isAdmin);
 
 router.get("/users", listUsers);
+router.get("/identity/pending", listPendingIdentityReviews);
 router.patch("/users/:id/ban", banUser);
 router.patch("/users/:id/unban", unbanUser);
+router.patch("/users/:id/identity/approve", approveIdentity);
+router.patch("/users/:id/identity/reject", rejectIdentity);
 router.delete("/users/:id", deleteUserAdmin);
 
 router.get("/requests", listRequests);
