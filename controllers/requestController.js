@@ -6,6 +6,15 @@ export async function postRequest(req, res) {
     const { title, description, longitude, latitude, urgency = "normal" } = req.body;
     const userId = req.user.id;
 
+    console.log("postRequest incoming:", {
+      userId,
+      title,
+      descriptionLength: description?.length,
+      longitude,
+      latitude,
+      urgency,
+    });
+
     if (!title || !description) {
       return res.status(400).json({ error: "Title or description missing" });
     }
@@ -24,6 +33,11 @@ export async function postRequest(req, res) {
         type: "Point",
         coordinates: [longitude, latitude],
       },
+    });
+
+    console.log("postRequest saved:", {
+      id: newRequest._id.toString(),
+      db: newRequest.db.name,
     });
 
     res.status(201).json({
