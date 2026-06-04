@@ -19,6 +19,7 @@ export const authenticateSocketToken = async (token) => {
   return {
     id: user._id.toString(),
     role: user.role,
+    identityStatus: user.identityStatus || "not_started",
   };
 };
 

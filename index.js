@@ -13,6 +13,7 @@ import cors from "cors";
 import helmet from "helmet";
 import uploadRouter from "./routers/uploadRouter.js";
 import adminRouter from "./routers/adminRouter.js";
+import identityRouter from "./routers/identityRouter.js";
 import { initSocketServer } from "./socket.js";
 app.use(json());
 app.use(helmet());
